@@ -1,0 +1,8 @@
+external-api/external-api/
+external-gate/external-gate/
+external-interface/external-interface/
+internal-messager/internal-messager/
+internal-monitor/internal-monitor/
+internal-scheduler/internal-scheduler/
+internal-restore/internal-restore/
+playbooks/inventory/

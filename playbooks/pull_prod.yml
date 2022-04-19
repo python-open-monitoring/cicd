@@ -1,0 +1,6 @@
+- hosts: monitoring_prod
+  remote_user: root
+  become: yes 
+  tasks:
+    - import_tasks: tasks/pull_interface.yml
+    - import_tasks: tasks/pull_and_compose_up.yml

@@ -1,0 +1,82 @@
+---
+
+- name: Pull and build external-api
+  shell: |   
+        cd /var/www/monitoring/external-api/external-api
+        git pull origin master 
+        cd /var/www/monitoring/external-api/
+        docker build -t external-api .
+  ignore_errors: yes
+  tags:
+      - external-api
+
+- name: Pull and build external-gate
+  shell: |   
+        cd /var/www/monitoring/external-gate/external-gate
+        git pull origin master 
+        cd /var/www/monitoring/external-gate/
+        docker build -t external-gate .
+        service supervisord restart
+  ignore_errors: yes
+  tags:
+      - external-gate
+
+- name: Pull and build internal-scheduler
+  shell: |   
+        cd /var/www/monitoring/internal-scheduler/internal-scheduler
+        git pull origin master 
+        cd /var/www/monitoring/internal-scheduler/
+        docker build -t internal-scheduler .
+  ignore_errors: yes
+  tags:
+      - internal-scheduler
+
+- name: Pull and build internal-monitor
+  shell: |   
+        cd /var/www/monitoring/internal-monitor/internal-monitor
+        git pull origin master 
+        cd /var/www/monitoring/internal-monitor/
+        docker build -t internal-monitor .
+  ignore_errors: yes
+  tags:
+      - internal-monitor
+
+- name: Pull and build internal-messager
+  shell: |   
+        cd /var/www/monitoring/internal-messager/internal-messager
+        git pull origin master 
+        cd /var/www/monitoring/internal-messager/
+        docker build -t internal-messager .
+  ignore_errors: yes
+  tags:
+      - internal-messager
+
+- name: Pull and build internal-restore
+  shell: |   
+        cd /var/www/monitoring/internal-restore/internal-restore
+        git pull origin master 
+        cd /var/www/monitoring/internal-restore/
+        docker build -t internal-restore .
+  ignore_errors: yes
+  tags:
+      - internal-restore
+
+- name: Deploy production
+  shell: |           
+        cd /var/www/monitoring/   
+        docker-compose up --build -d
+  ignore_errors: yes
+  tags:
+      - deploy_production
+      
+- name: Run external-api migrations
+  shell: |             
+        docker exec -it $(docker ps -q -f name=monitoring-external-api | head -1) python3 manage.py migrate
+  ignore_errors: yes
+  tags:
+      - migrations-external-api
+
+
+
+
+

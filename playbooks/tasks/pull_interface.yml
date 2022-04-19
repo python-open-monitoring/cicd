@@ -1,0 +1,8 @@
+- name: Pull and build external-interface
+  shell: |   
+        cd /var/www/monitoring/external-interface/external-interface
+        git pull origin master
+        npm run build
+  ignore_errors: yes
+  tags:
+      - external-interface

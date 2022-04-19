@@ -1,0 +1,92 @@
+---
+- name: Dump API DB
+  hosts: mon7_prod
+  remote_user: root
+  become: yes  
+  tasks:
+  - name: Dump API DB
+    shell: | 
+          cd /var/www
+          /usr/pgsql-12/bin/pg_dump -U postgres --format=c -x -v -O -f mon7__external__api.dump.gz mon7__external__api
+    ignore_errors: yes
+    tags:
+        - dump api db
+
+- name: Drop active users
+  hosts: mon7_prod
+  remote_user: root
+  become: yes  
+  tasks:
+  - name: Drop active users
+    retries: 20
+    delay: 1  
+    shell: |
+      ps aux | grep -i 'postgres: mon_user' | awk '{print $2}' | xargs sudo kill -9              
+    register: drop_users_result
+    until: "drop_users_result.stdout | length > 0"
+    ignore_errors: yes
+  - debug: msg={{ drop_users_result.stdout.split('\n')[:-1] }}
+
+- name: Drop API DB
+  hosts: mon7_prod
+  remote_user: root
+  become: yes
+  tasks:
+  - name: Drop DB
+    retries: 20
+    delay: 2
+    shell: |
+      /usr/pgsql-12/bin/dropdb --if-exists -U mon_user mon7__external__api__dev
+    register: drop_db_result
+    until: "drop_db_result.stdout | length > 0"
+    ignore_errors: yes
+  - debug: msg={{ drop_db_result.stdout.split('\n')[:-1] }}
+
+  - name: Upload API DB
+    retries: 5
+    delay: 10
+    shell: |
+      cd /var/www/
+      /usr/pgsql-12/bin/psql -U postgres -d postgres -c 'create database mon7__external__api__dev with owner mon_user;' 
+      /usr/pgsql-12/bin/pg_restore -U postgres --no-owner -F c -v -d mon7__external__api__dev mon7__external__api.dump.gz 
+    register: upload_result
+    no_log: true
+  - debug: msg='download complete'
+
+- name: Dump Gate DB
+  hosts: mon7_prod
+  remote_user: root
+  become: yes
+  tasks:
+  - name: Dump Gate DB
+    shell: |   
+          cd /var/www
+          /usr/pgsql-12/bin/pg_dump -U postgres --format=c -x -v -O -f mon7__external__gate.dump.gz mon7__external__gate
+    ignore_errors: yes
+
+- name: Drop Gate DB
+  hosts: mon7_prod
+  remote_user: root
+  become: yes
+  tasks:
+  - name: Drop DB
+    retries: 20
+    delay: 2
+    shell: |
+      /usr/pgsql-12/bin/dropdb --if-exists -U mon_user mon7__external__gate__dev
+    register: drop_db_result
+    until: "drop_db_result.stdout | length > 0"
+    ignore_errors: yes
+  - debug: msg={{ drop_db_result.stdout.split('\n')[:-1] }}
+
+  - name: Upload Gate DB
+    retries: 5
+    delay: 10
+    shell: |
+      cd /var/www/
+      /usr/pgsql-12/bin/psql -U postgres -d postgres -c 'create database mon7__external__gate__dev with owner mon_user;' 
+      /usr/pgsql-12/bin/pg_restore -U postgres --no-owner -F c -v -d mon7__external__gate__dev mon7__external__gate.dump.gz 
+    register: upload_result
+    no_log: true
+  - debug: msg='download complete'
+

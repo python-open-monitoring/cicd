@@ -1,0 +1,55 @@
+version: '3.4'
+
+services:
+
+  external-gate:
+      container_name: monitoring-external-gate
+      build: 
+        context: ./external-gate/
+        dockerfile: Dockerfile
+      restart: always 
+      network_mode: "host" 
+
+  external-api:
+      container_name: monitoring-external-api
+      build: 
+        context: ./external-api/
+        dockerfile: Dockerfile
+      restart: always
+      network_mode: "host" 
+
+  internal-scheduler:
+      container_name: monitoring-internal-scheduler
+      build: 
+        context: ./internal-scheduler/
+        dockerfile: Dockerfile
+      restart: always
+      network_mode: "host"
+
+  internal-monitor:
+      container_name: monitoring-internal-monitor
+      build: 
+        context: ./internal-monitor/
+        dockerfile: Dockerfile
+      restart: always  
+      network_mode: "host"
+
+  internal-messager:
+      container_name: monitoring-internal-messager
+      build: 
+        context: ./internal-messager/
+        dockerfile: Dockerfile
+      restart: always  
+      network_mode: "host"
+
+  internal-restore:
+      container_name: monitoring-internal-restore
+      build: 
+        context: ./internal-restore/
+        dockerfile: Dockerfile
+      restart: always
+      network_mode: "host"
+
+networks:
+  monitoring-network:
+    driver: bridge
